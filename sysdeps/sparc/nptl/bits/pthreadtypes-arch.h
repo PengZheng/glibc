@@ -51,14 +51,14 @@
 
 struct __pthread_rwlock_arch_t
 {
-  unsigned int __readers;
-  unsigned int __writers;
-  unsigned int __wrphase_futex;
-  unsigned int __writers_futex;
-  unsigned int __pad3;
-  unsigned int __pad4;
+  int __lock;
+  unsigned int __nr_readers;
+  unsigned int __readers_wakeup;
+  unsigned int __writer_wakeup;
+  unsigned int __nr_readers_queued;
+  unsigned int __nr_writers_queued;
 #if __WORDSIZE == 64
-  int __cur_writer;
+  int __writer;
   int __shared;
   unsigned long int __pad1;
   unsigned long int __pad2;
@@ -72,7 +72,7 @@ struct __pthread_rwlock_arch_t
   /* FLAGS must stay at this position in the structure to maintain
      binary compatibility.  */
   unsigned char __flags;
-  int __cur_writer;
+  int __writer;
 #endif
 };
 

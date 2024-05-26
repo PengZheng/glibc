@@ -1,5 +1,5 @@
-/* Machine-specific pthread type layouts.  Nios II version.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+/* Machine-specific pthread type layouts.  C-SKY version.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -21,26 +21,28 @@
 
 #include <endian.h>
 
-#define __SIZEOF_PTHREAD_ATTR_T 36
-#define __SIZEOF_PTHREAD_MUTEX_T 24
-#define __SIZEOF_PTHREAD_MUTEXATTR_T 4
-#define __SIZEOF_PTHREAD_COND_T 48
-#define __SIZEOF_PTHREAD_CONDATTR_T 4
-#define __SIZEOF_PTHREAD_RWLOCK_T 32
-#define __SIZEOF_PTHREAD_RWLOCKATTR_T 8
-#define __SIZEOF_PTHREAD_BARRIER_T 20
-#define __SIZEOF_PTHREAD_BARRIERATTR_T 4
+#define __SIZEOF_PTHREAD_ATTR_T			36
+#define __SIZEOF_PTHREAD_MUTEX_T		24
+#define __SIZEOF_PTHREAD_MUTEXATTR_T		4
+#define __SIZEOF_PTHREAD_COND_T			48
+#define __SIZEOF_PTHREAD_CONDATTR_T		4
+#define __SIZEOF_PTHREAD_RWLOCK_T		32
+#define __SIZEOF_PTHREAD_RWLOCKATTR_T		8
+#define __SIZEOF_PTHREAD_BARRIER_T		20
+#define __SIZEOF_PTHREAD_BARRIERATTR_T		4
 
-/* Data structure for mutex handling. */
+/* Data structure for mutex handling.  */
 #define __PTHREAD_COMPAT_PADDING_MID
 #define __PTHREAD_COMPAT_PADDING_END
-#define __PTHREAD_MUTEX_LOCK_ELISION    0
-#define __PTHREAD_MUTEX_NUSERS_AFTER_KIND  1
-#define __PTHREAD_MUTEX_USE_UNION          1
+#define __PTHREAD_MUTEX_LOCK_ELISION		0
+#define __PTHREAD_MUTEX_NUSERS_AFTER_KIND	1
+#define __PTHREAD_MUTEX_USE_UNION		1
 
 #define __LOCK_ALIGNMENT
 #define __ONCE_ALIGNMENT
 
+/* Paddings in this structure are not strictly necessary on C-SKY.
+   They are left for extensibility as most other architecture do so.  */
 struct __pthread_rwlock_arch_t
 {
   int __lock;
@@ -53,12 +55,8 @@ struct __pthread_rwlock_arch_t
   unsigned char __pad1;
   unsigned char __pad2;
   unsigned char __shared;
-  /* FLAGS must stay at this position in the structure to maintain
-     binary compatibility.  */
   unsigned char __flags;
 #else
-  /* FLAGS must stay at this position in the structure to maintain
-     binary compatibility.  */
   unsigned char __flags;
   unsigned char __shared;
   unsigned char __pad1;
@@ -69,4 +67,4 @@ struct __pthread_rwlock_arch_t
 
 #define __PTHREAD_RWLOCK_ELISION_EXTRA 0
 
-#endif	/* bits/pthreadtypes.h */
+#endif

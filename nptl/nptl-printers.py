@@ -437,10 +437,12 @@ class RWLockPrinter(object):
         """
 
         data = rwlock['__data']
-        self.readers = data['__readers']
-        self.cur_writer = data['__cur_writer']
+        self.readers = data['__nr_readers']
+        self.queued_readers = data['__nr_readers_queued']
+        self.queued_writers = data['__nr_writers_queued']
+        self.writer_id = data['__writer']
         self.shared = data['__shared']
-        self.flags = data['__flags']
+        self.prefers_writers = data['__flags']
         self.values = []
         self.read_values()
 
@@ -473,19 +475,20 @@ class RWLockPrinter(object):
     def read_status(self):
         """Read the status of the rwlock."""
 
-        if self.readers & PTHREAD_RWLOCK_WRPHASE:
-            if self.readers & PTHREAD_RWLOCK_WRLOCKED:
-                self.values.append(('Status', 'Acquired (Write)'))
-                self.values.append(('Writer ID', self.cur_writer))
-            else:
-                self.values.append(('Status', 'Not acquired'))
+        # Right now pthread_rwlock_destroy doesn't do anything, so there's no
+        # way to check if an rwlock is destroyed.
+
+        if self.writer_id:
+            self.values.append(('Status', 'Locked (Write)'))
+            self.values.append(('Writer ID', self.writer_id))
+        elif self.readers:
+            self.values.append(('Status', 'Locked (Read)'))
+            self.values.append(('Readers', self.readers))
         else:
-            r = self.readers >> PTHREAD_RWLOCK_READER_SHIFT
-            if r > 0:
-                self.values.append(('Status', 'Acquired (Read)'))
-                self.values.append(('Readers', r))
-            else:
-                self.values.append(('Status', 'Not acquired'))
+            self.values.append(('Status', 'Unlocked'))
+
+        self.values.append(('Queued readers', self.queued_readers))
+        self.values.append(('Queued writers', self.queued_writers))
 
     def read_attributes(self):
         """Read the attributes of the rwlock."""
@@ -495,12 +498,10 @@ class RWLockPrinter(object):
         else:
             self.values.append(('Shared', 'No'))
 
-        if self.flags == PTHREAD_RWLOCK_PREFER_READER_NP:
-            self.values.append(('Prefers', 'Readers'))
-        elif self.flags == PTHREAD_RWLOCK_PREFER_WRITER_NP:
+        if self.prefers_writers:
             self.values.append(('Prefers', 'Writers'))
         else:
-            self.values.append(('Prefers', 'Writers no recursive readers'))
+            self.values.append(('Prefers', 'Readers'))
 
 class RWLockAttributesPrinter(object):
     """Pretty printer for pthread_rwlockattr_t.
@@ -561,12 +562,13 @@ class RWLockAttributesPrinter(object):
             # PTHREAD_PROCESS_PRIVATE
             self.values.append(('Shared', 'No'))
 
-        if rwlock_type == PTHREAD_RWLOCK_PREFER_READER_NP:
+        if (rwlock_type == PTHREAD_RWLOCK_PREFER_READER_NP or
+                rwlock_type == PTHREAD_RWLOCK_PREFER_WRITER_NP):
+            # This is a known bug.  Using PTHREAD_RWLOCK_PREFER_WRITER_NP will
+            # still make the rwlock prefer readers.
             self.values.append(('Prefers', 'Readers'))
-        elif rwlock_type == PTHREAD_RWLOCK_PREFER_WRITER_NP:
+        elif rwlock_type == PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP:
             self.values.append(('Prefers', 'Writers'))
-        else:
-            self.values.append(('Prefers', 'Writers no recursive readers'))
 
 def register(objfile):
     """Register the pretty printers within the given objfile."""

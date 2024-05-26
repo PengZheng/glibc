@@ -64,14 +64,14 @@
 
 struct __pthread_rwlock_arch_t
 {
-  unsigned int __readers;
-  unsigned int __writers;
-  unsigned int __wrphase_futex;
-  unsigned int __writers_futex;
-  unsigned int __pad3;
-  unsigned int __pad4;
+  int __lock;
+  unsigned int __nr_readers;
+  unsigned int __readers_wakeup;
+  unsigned int __writer_wakeup;
+  unsigned int __nr_readers_queued;
+  unsigned int __nr_writers_queued;
 #ifdef __x86_64__
-  int __cur_writer;
+  int __writer;
   int __shared;
   signed char __rwelision;
 # ifdef  __ILP32__
@@ -94,7 +94,7 @@ struct __pthread_rwlock_arch_t
   signed char __rwelision;
 # define __PTHREAD_RWLOCK_ELISION_EXTRA 0
   unsigned char __pad2;
-  int __cur_writer;
+  int __writer;
 #endif
 };
 
